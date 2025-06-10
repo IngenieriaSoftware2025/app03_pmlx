@@ -27,25 +27,5 @@ class Roles extends ActiveRecord {
         $this->descripcion = $rol['descripcion'] ?? '';
         $this->fecha_creacion = $rol['fecha_creacion'] ?? null;
     }
-
-    // Validar nuevo rol
-    public function validar() {
-        if(!$this->nombre_rol) {
-            self::$alertas['error'][] = 'El Nombre del Rol es Obligatorio';
-        }
-        if(!$this->descripcion) {
-            self::$alertas['error'][] = 'La Descripción es Obligatoria';
-        }
-
-        return self::$alertas;
-    }
-
-    // Obtener roles activos para select
-    public static function obtenerActivos() {
-        $query = "SELECT * FROM " . static::$tabla . " ORDER BY nombre_rol ASC";
-        $resultado = self::consultarSQL($query);
-        return $resultado;
-    }
 }
-
 ?>

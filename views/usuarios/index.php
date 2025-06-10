@@ -5,24 +5,24 @@
                 <div class="card custom-card shadow-lg" style="border-radius: 20px;">
                     <div class="card-header-custom text-center">
                         <h2 class="mb-0 floating-animation">
-                            <i class="fas fa-users me-2"></i>
-                            Gestión de Clientes
+                            <i class="fas fa-user-cog me-2"></i>
+                            Gestión de Usuarios
                         </h2>
-                        <p class="mb-0 mt-2 opacity-75">Sistema completo para registro, modificación y eliminación</p>
+                        <p class="mb-0 mt-2 opacity-75">Sistema completo para registro, modificación y eliminación de usuarios</p>
                     </div>
                     
                     <div class="card-body p-4">
                         <div class="form-section">
                             <h4 class="section-title">
                                 <i class="fas fa-user-plus me-2"></i>
-                                Información del Cliente
+                                Información del Usuario
                             </h4>
                             
-                            <form id="FormClientes">
-                                <input type="hidden" id="id_cliente" name="id_cliente">
+                            <form id="FormUsuarios">
+                                <input type="hidden" id="id_usuario" name="id_usuario">
 
                                 <div class="row">
-                                    <!-- Nombre -->
+                                    <!-- Nombres -->
                                     <div class="col-lg-6">
                                         <div class="input-group mb-3">
                                             <span class="input-group-text">
@@ -35,7 +35,7 @@
                                         </div>
                                     </div>
 
-                                    <!-- Apellido -->
+                                    <!-- Apellidos -->
                                     <div class="col-lg-6">
                                         <div class="input-group mb-3">
                                             <span class="input-group-text">
@@ -48,32 +48,6 @@
                                         </div>
                                     </div>
 
-                                    <!-- Cédula -->
-                                    <div class="col-lg-6">
-                                        <div class="input-group mb-3">
-                                            <span class="input-group-text">
-                                                <i class="fas fa-id-badge"></i>
-                                            </span>
-                                            <div class="form-floating flex-grow-1">
-                                                <input type="text" class="form-control" id="cedula" name="cedula" placeholder="Cédula">
-                                                <label for="cedula">Número de Cédula</label>
-                                            </div>
-                                        </div>
-                                    </div>
-
-                                    <!-- NIT -->
-                                    <div class="col-lg-6">
-                                        <div class="input-group mb-3">
-                                            <span class="input-group-text">
-                                                <i class="fas fa-file-invoice"></i>
-                                            </span>
-                                            <div class="form-floating flex-grow-1">
-                                                <input type="text" class="form-control" id="nit" name="nit" placeholder="NIT">
-                                                <label for="nit">Número de NIT</label>
-                                            </div>
-                                        </div>
-                                    </div>
-
                                     <!-- Email -->
                                     <div class="col-lg-6">
                                         <div class="input-group mb-3">
@@ -81,34 +55,55 @@
                                                 <i class="fas fa-envelope"></i>
                                             </span>
                                             <div class="form-floating flex-grow-1">
-                                                <input type="email" class="form-control" id="email" name="email" placeholder="correo@ejemplo.com">
+                                                <input type="email" class="form-control" id="email" name="email" placeholder="usuario@ejemplo.com">
                                                 <label for="email">Correo Electrónico</label>
                                             </div>
                                         </div>
                                     </div>
 
-                                    <!-- Teléfono -->
+                                    <!-- Password -->
                                     <div class="col-lg-6">
                                         <div class="input-group mb-3">
                                             <span class="input-group-text">
-                                                <i class="fas fa-phone"></i>
+                                                <i class="fas fa-lock"></i>
                                             </span>
                                             <div class="form-floating flex-grow-1">
-                                                <input type="text" class="form-control" id="telefono" name="telefono" placeholder="Teléfono">
-                                                <label for="telefono">Teléfono</label>
+                                                <input type="password" class="form-control" id="password" name="password" placeholder="Contraseña">
+                                                <label for="password">Contraseña</label>
                                             </div>
                                         </div>
                                     </div>
 
-                                    <!-- Dirección -->
-                                    <div class="col-12">
-                                        <div class="input-group mb-4">
+                                    <!-- Rol -->
+                                    <div class="col-lg-6">
+                                        <div class="input-group mb-3">
                                             <span class="input-group-text">
-                                                <i class="fas fa-map-marker-alt"></i>
+                                                <i class="fas fa-user-tag"></i>
                                             </span>
                                             <div class="form-floating flex-grow-1">
-                                                <textarea class="form-control" id="direccion" name="direccion" placeholder="Dirección completa" style="height: 100px"></textarea>
-                                                <label for="direccion">Dirección Completa</label>
+                                                <select class="form-select" id="id_rol" name="id_rol">
+                                                    <option value="">Seleccionar Rol</option>
+                                                    <option value="1">Administrador</option>
+                                                    <option value="2">Empleado</option>
+                                                    <option value="3">Gerente</option>
+                                                </select>
+                                                <label for="id_rol">Rol del Usuario</label>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <!-- Estado -->
+                                    <div class="col-lg-6">
+                                        <div class="input-group mb-4">
+                                            <span class="input-group-text">
+                                                <i class="fas fa-toggle-on"></i>
+                                            </span>
+                                            <div class="form-floating flex-grow-1">
+                                                <select class="form-select" id="activo" name="activo">
+                                                    <option value="S">Activo</option>
+                                                    <option value="N">Inactivo</option>
+                                                </select>
+                                                <label for="activo">Estado del Usuario</label>
                                             </div>
                                         </div>
                                     </div>
@@ -145,22 +140,21 @@
         <div class="card custom-card shadow-lg" style="border-radius: 10px; border: 1px solid #007bff;">
             <div class="card-body p-3">
                 <h3 class="text-center">
-                    <i class="fas fa-address-book me-2"></i>
-                    Clientes Existentes
+                    <i class="fas fa-users me-2"></i>
+                    Usuarios Existentes
                 </h3>
 
                 <div class="table-responsive p-2">
-                    <table class="table table-striped table-hover table-bordered w-100 table-sm" id="TableClientes">
+                    <table class="table table-striped table-hover table-bordered w-100 table-sm" id="TableUsuarios">
                         <thead class="table-dark">
                             <tr>
                                 <th>ID</th>
                                 <th>Nombre</th>
                                 <th>Apellido</th>
-                                <th>Cédula</th>
-                                <th>NIT</th>
                                 <th>Email</th>
-                                <th>Teléfono</th>
-                                <th>Fecha Registro</th>
+                                <th>Rol</th>
+                                <th>Estado</th>
+                                <th>Fecha Creación</th>
                                 <th>Acciones</th>
                             </tr>
                         </thead>
@@ -176,4 +170,4 @@
 </div>
 </div>
 
-<script src="<?= asset('build/js/clientes/clientes.js') ?>"></script>
+<script src="<?= asset('build/js/usuarios/usuarios.js') ?>"></script>
