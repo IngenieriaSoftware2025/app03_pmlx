@@ -1,52 +1,48 @@
-import { Dropdown } from "bootstrap"; //si utilizo dropdown en mi layaut  (Dropdown es un funcion interna del MVC)
-import Swal from "sweetalert2"; //para utilizar las alertas
+import { Dropdown } from "bootstrap";
+import Swal from "sweetalert2";
 import DataTable from "datatables.net-bs5";
-import { validarFormulario } from "../funciones"; //(validarFormulario es un funcion interna del MVC)
-import { lenguaje } from "../lenguaje"; //(lenguaje es un funcion interna del MVC)
-import { error } from "jquery";
+import { validarFormulario } from "../funciones";
+import { lenguaje } from "../lenguaje";
 
+// ✅ CORREGIDO: IDs que coinciden con el HTML
 const FormClientes = document.getElementById('FormClientes');
 const BtnGuardar = document.getElementById('BtnGuardar');
 const BtnModificar = document.getElementById('BtnModificar');
 const BtnLimpiar = document.getElementById('BtnLimpiar');
 const BtnEliminar = document.getElementById('BtnEliminar');
-const validarTelefono = document.getElementById('cliente_telefono');
-const validarNit = document.getElementById('cliente_nit');
+const validarTelefono = document.getElementById('telefono'); // ✅ Corregido
+const validarNit = document.getElementById('nit'); // ✅ Corregido
 
 const validacionTelefono = () => {
-
-    const cantidadDigitos = validarTelefono.value
+    const cantidadDigitos = validarTelefono.value;
 
     if (cantidadDigitos.length < 1) {
-
         validarTelefono.classList.remove('is-valid', 'is-invalid');
-
     } else {
-        if (cantidadDigitos.length < 1) {
+        // ✅ CORREGIDO: La lógica estaba mal
+        if (cantidadDigitos.length < 8) {
             Swal.fire({
                 position: "center",
                 icon: "warning",
-                title: "Revice el número de telefono",
-                text: "La cantidad de digitos debe de ser mayor o igual a 8 digitos",
+                title: "Revise el número de teléfono",
+                text: "La cantidad de dígitos debe ser de 8 dígitos",
                 showConfirmButton: false,
                 timer: 3000
-            })
+            });
 
             validarTelefono.classList.remove('is-valid');
             validarTelefono.classList.add('is-invalid');
-
         } else {
             validarTelefono.classList.remove('is-invalid');
             validarTelefono.classList.add('is-valid');
         }
     }
-
 }
 
-
 function validandoNit() {
-    const nit = cliente_nit.value.trim();
-
+    // ✅ CORREGIDO: usar el ID correcto
+    const nit = document.getElementById('nit').value.trim();
+    
     let nd, add = 0;
 
     if (nd = /^(\d+)-?([\dkK])$/.exec(nit)) {
@@ -62,74 +58,53 @@ function validandoNit() {
 }
 
 const EsValidoNit = () => {
-    validandoNit();
-
+    // ✅ CORREGIDO: usar el elemento correcto
+    const nitElement = document.getElementById('nit');
+    
     if (validandoNit()) {
-        cliente_nit.classList.add('is-valid');
-        cliente_nit.classList.remove('is-invalid');
+        nitElement.classList.add('is-valid');
+        nitElement.classList.remove('is-invalid');
     } else {
-        cliente_nit.classList.remove('is-valid');
-        cliente_nit.classList.add('is-invalid');
+        nitElement.classList.remove('is-valid');
+        nitElement.classList.add('is-invalid');
 
         Swal.fire({
             position: "center",
             icon: "warning",
-            title: "NIT INVALIDO",
-            text: "El numero de nit ingresado es invalido",
+            title: "NIT INVÁLIDO",
+            text: "El número de NIT ingresado es inválido",
             showConfirmButton: false,
             timer: 3000
         });
-
     }
 }
 
 const GuardarCliente = async (event) => {
-    event.preventDefault(); //evita el envio del formulario
-    BtnGuardar.disabled = false;
+    event.preventDefault();
+    BtnGuardar.disabled = true;
 
-
-    if (!validarFormulario(FormClientes, ['cliente_id'])) {
-        Swal.fire({
-            position: "center",
-            icon: "warning",
-            title: "FORMULARIO INCOMPLETO",
-            text: "Debe de validar todos los campos",
-            showConfirmButton: false,
-            timer: 3000
-        });
-        return;
-    }
-
-    //crea una instancia de la clase FormData
     const body = new FormData(FormClientes);
-
     const url = '/app03_jemg/clientes/guardarCliente';
-    const config = {
-        method: 'POST',
-        body
-    }
-
-    //tratar de guardar un cliente
+    
     try {
-        const respuesta = await fetch(url, config);
+        const respuesta = await fetch(url, {
+            method: 'POST',
+            body
+        });
         const datos = await respuesta.json();
-
-        const { codigo, mensaje } = datos
-        console.log("Respuesta del servidor:", datos);
+        const { codigo, mensaje } = datos;
+        
         if (codigo == 1) {
-
             Swal.fire({
                 position: "center",
                 icon: "success",
-                title: "Exito",
+                title: "Éxito",
                 text: mensaje,
                 showConfirmButton: false,
-                timer: 3000,
+                timer: 2000,
             });
-
             limpiarTodo();
             BuscarCliente();
-
         } else {
             Swal.fire({
                 position: "center",
@@ -139,15 +114,12 @@ const GuardarCliente = async (event) => {
                 showConfirmButton: false,
                 timer: 3000,
             });
-            return;
         }
     } catch (error) {
-        console.log(error)
+        console.log("Error:", error);
     }
     BtnGuardar.disabled = false;
-
 }
-
 
 const datatable = new DataTable('#TableClientes', {
     dom: `
@@ -167,18 +139,18 @@ const datatable = new DataTable('#TableClientes', {
     columns: [
         {
             title: 'No.',
-            data: 'cliente_id',
-            width: '%',
+            data: 'id_cliente', // ✅ CORREGIDO: nombre de campo
+            width: '5%',
             render: (data, type, row, meta) => meta.row + 1
         },
-        { title: 'Nombre', data: 'cliente_nombres' },
-        { title: 'Apellidos', data: 'cliente_apellidos' },
-        { title: 'Correo', data: 'cliente_correo' },
-        { title: 'Telefono', data: 'cliente_telefono' },
-        { title: 'Nit', data: 'cliente_nit' },
+        { title: 'Nombre', data: 'nombres' }, // ✅ CORREGIDO
+        { title: 'Apellidos', data: 'apellidos' }, // ✅ CORREGIDO
+        { title: 'Correo', data: 'correo' }, // ✅ CORREGIDO
+        { title: 'Teléfono', data: 'telefono' }, // ✅ CORREGIDO
+        { title: 'NIT', data: 'nit' }, // ✅ CORREGIDO
         {
             title: 'Acciones',
-            data: 'cliente_id',
+            data: 'id_cliente', // ✅ CORREGIDO
             searchable: false,
             orderable: false,
             render: (data, type, row, meta) => {
@@ -186,11 +158,11 @@ const datatable = new DataTable('#TableClientes', {
                 <div class='d-flex justify-content-center'>
                      <button class='btn btn-warning modificar mx-1' 
                          data-id="${data}" 
-                         data-nombres="${row.cliente_nombres}"  
-                         data-apellidos="${row.cliente_apellidos}"  
-                         data-nit="${row.cliente_nit}"  
-                         data-telefono="${row.cliente_telefono}"  
-                         data-correo="${row.cliente_correo}"  
+                         data-nombres="${row.nombres}"  
+                         data-apellidos="${row.apellidos}"  
+                         data-nit="${row.nit}"  
+                         data-telefono="${row.telefono}"  
+                         data-correo="${row.correo}">
                          <i class='bi bi-pencil-square me-1'></i> Modificar
                      </button>
                      <button class='btn btn-danger eliminar mx-1' 
@@ -203,92 +175,119 @@ const datatable = new DataTable('#TableClientes', {
     ],
 })
 
-const BuscarCliente = async () =>{
+const BuscarCliente = async () => {
+    console.log('🔄 Iniciando búsqueda de clientes...');
+    
+    // ✅ USAR LA RUTA DEL FRAMEWORK QUE YA TIENES CONFIGURADA
     const url = '/app03_jemg/clientes/buscarCliente';
-    const config = {
-        method: 'GET'
-    }
-
+    
     try {
-        const respuesta = await fetch(url, config)
+        console.log(`🔄 Usando URL: ${url}`);
+        
+        const respuesta = await fetch(url, {
+            method: 'GET',
+            headers: {
+                'Content-Type': 'application/json',
+                'Accept': 'application/json'
+            }
+        });
+        
+        console.log(`📡 Respuesta:`, respuesta.status, respuesta.statusText);
+        
+        if (!respuesta.ok) {
+            throw new Error(`HTTP ${respuesta.status}`);
+        }
+        
         const datos = await respuesta.json();
-        const { codigo, mensaje, data } = datos
+        console.log('✅ Datos recibidos:', datos);
+        
+        const { codigo, mensaje, data } = datos;
 
-        if (codigo ===1) {
+        if (codigo === 1) {
+            console.log('✅ Clientes cargados exitosamente');
+            datatable.clear().draw();
+            datatable.rows.add(data || []).draw();
+            
             Swal.fire({
                 position: "center",
                 icon: "success",
-                title: "Exito",
+                title: "¡Éxito!",
                 text: mensaje,
                 showConfirmButton: false,
-                timer: 3000,
+                timer: 2000,
             });
-
-            datatable.clear().draw();
-            datatable.rows.add(data).draw();
-            
         } else {
+            console.log('ℹ️ Respuesta del servidor:', mensaje);
             Swal.fire({
                 position: "center",
-                icon: "Info",
-                title: "Error",
+                icon: "info",
+                title: "Información",
                 text: mensaje,
                 showConfirmButton: false,
                 timer: 3000,
             });
-            return;
         }
     } catch (error) {
-        console.log(error);
-        
+        console.error('❌ Error:', error);
+        Swal.fire({
+            position: "center",
+            icon: "error",
+            title: "Error de conexión",
+            text: "No se pudo conectar con el servidor",
+            showConfirmButton: true,
+        });
     }
-
 }
 
 const llenarFormulario = (event) => {
-    const datos = event.currentTarget.dataset
+    const datos = event.currentTarget.dataset;
 
-    document.getElementById('cliente_id').value = datos.id
-    document.getElementById('cliente_nombres').value = datos.nombres
-    document.getElementById('cliente_apellidos').value = datos.apellidos
-    document.getElementById('cliente_nit').value = datos.nit
-    document.getElementById('cliente_telefono').value = datos.telefono
-    document.getElementById('cliente_correo').value = datos.correo
+    // ✅ CORREGIDO: IDs correctos
+    document.getElementById('id_cliente').value = datos.id;
+    document.getElementById('nombres').value = datos.nombres;
+    document.getElementById('apellidos').value = datos.apellidos;
+    document.getElementById('nit').value = datos.nit;
+    document.getElementById('telefono').value = datos.telefono;
+    document.getElementById('correo').value = datos.correo;
 
     BtnGuardar.classList.add('d-none');
     BtnModificar.classList.remove('d-none');
 
     window.scrollTo({
         top: 0
-    })
-
+    });
 }
 
 const limpiarTodo = () => {
     FormClientes.reset();
     BtnGuardar.classList.remove('d-none');
     BtnModificar.classList.add('d-none');
-
+    
+    // Limpiar clases de validación
+    const inputs = FormClientes.querySelectorAll('input');
+    inputs.forEach(input => {
+        input.classList.remove('is-valid', 'is-invalid');
+    });
 }
 
 const ModificarCliente = async (event) => {
-    event.preventDefault(),
+    event.preventDefault();
     BtnModificar.disabled = true;
 
     if (!validarFormulario(FormClientes, [''])) {
         Swal.fire({
-                position: "center",
-                icon: "success",
-                title: "Exito",
-                text: mensaje,
-                showConfirmButton: false,
-                timer: 3000,
-            });
-            BtnGuardar.disabled = false;        
+            position: "center",
+            icon: "warning",
+            title: "Formulario incompleto",
+            text: "Debe validar todos los campos",
+            showConfirmButton: false,
+            timer: 3000,
+        });
+        BtnModificar.disabled = false;
+        return;
     }
 
     const body = new FormData(FormClientes);
-
     const url = '/app03_jemg/clientes/modificarCliente';
     const config = {
         method: 'POST',
@@ -296,16 +295,15 @@ const ModificarCliente = async (event) => {
     }
 
     try {
-        
         const respuesta = await fetch(url, config);
         const datos = await respuesta.json();
-        const { codigo, mensaje } = datos
+        const { codigo, mensaje } = datos;
 
         if (codigo === 1) {
             Swal.fire({
                 position: "center",
                 icon: "success",
-                title: "Exito",
+                title: "Éxito",
                 text: mensaje,
                 showConfirmButton: false,
                 timer: 3000,
@@ -313,48 +311,44 @@ const ModificarCliente = async (event) => {
 
             limpiarTodo();
             BuscarCliente();
-
         } else {
             Swal.fire({
                 position: "center",
-                icon: "Info",
+                icon: "error",
                 title: "Error",
                 text: mensaje,
                 showConfirmButton: false,
                 timer: 3000,
             });
-            return;
         }
-
     } catch (error) {
-        console.log(error);
+        console.log("Error:", error);
     }
     BtnModificar.disabled = false;
 }
 
 const EliminarCliente = async (e) => {
-    const idCliente = e.currentTarget.dataset.id
+    const idCliente = e.currentTarget.dataset.id;
 
     const AlertaConfirmarEliminar = await Swal.fire({
         position: "center",
-        icon: "info",
+        icon: "question",
         title: "¿Desea ejecutar esta acción?",
-        text: "Usted eliminara un cliente",
+        text: "Usted eliminará un cliente",
         showConfirmButton: true,
-        confirmButtonText: "Si",
-        confirmButtonColor: "red",
+        confirmButtonText: "Sí",
+        confirmButtonColor: "#d33",
         cancelButtonText: "Cancelar",
         showCancelButton: true
     });
 
     if (!AlertaConfirmarEliminar.isConfirmed) return;
 
-    // Preparamos el body para POST
     const body = new URLSearchParams();
-    body.append('cliente_id', idCliente);
+    body.append('id_cliente', idCliente); // ✅ CORREGIDO: nombre del campo
 
     try {
-        const respuesta = await fetch('/app03_jemg/clientes/EliminarCliente', {
+        const respuesta = await fetch('/app03_jemg/clientes/eliminarCliente', {
             method: 'POST',
             headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
             body
@@ -368,38 +362,82 @@ const EliminarCliente = async (e) => {
                 position: "center",
                 icon: "success",
                 title: "Éxito",
-                text: mensaje
+                text: mensaje,
+                showConfirmButton: false,
+                timer: 2000
             });
             BuscarCliente();
         } else {
             await Swal.fire({
                 position: "center",
-                icon: "info",
+                icon: "error",
                 title: "Error",
                 text: mensaje,
                 showConfirmButton: false,
-                timer: 1000
+                timer: 3000
             });
         }
-
     } catch (error) {
-        console.log(error);
+        console.log("Error:", error);
     }
 };
 
-
-//Eventos
-BuscarCliente();
-validarTelefono.addEventListener('change', validacionTelefono);
-validarNit.addEventListener('change', EsValidoNit);
-
-//guardar
-FormClientes.addEventListener('submit', GuardarCliente)
-
-//btn limpiar
-BtnLimpiar.addEventListener('click', limpiarTodo);
-BtnModificar.addEventListener('click', ModificarCliente);
-
-//datatable
-datatable.on('click', '.eliminar', EliminarCliente);
-datatable.on('click', '.modificar', llenarFormulario);
+// ✅ VERIFICACIÓN DE ELEMENTOS Y EVENTOS
+document.addEventListener('DOMContentLoaded', function() {
+    console.log('DOM cargado - Verificando elementos...');
+    
+    // Verificar elementos críticos
+    const elementos = {
+        FormClientes: document.getElementById('FormClientes'),
+        BtnGuardar: document.getElementById('BtnGuardar'),
+        BtnModificar: document.getElementById('BtnModificar'),
+        BtnLimpiar: document.getElementById('BtnLimpiar'),
+        validarTelefono: document.getElementById('telefono'),
+        validarNit: document.getElementById('nit'),
+        TableClientes: document.getElementById('TableClientes')
+    };
+    
+    // Log de elementos encontrados/no encontrados
+    Object.entries(elementos).forEach(([nombre, elemento]) => {
+        if (elemento) {
+            console.log(`✅ ${nombre} encontrado`);
+        } else {
+            console.error(`❌ ${nombre} NO encontrado`);
+        }
+    });
+    
+    // Solo agregar eventos si los elementos existen
+    if (elementos.FormClientes) {
+        elementos.FormClientes.addEventListener('submit', GuardarCliente);
+        console.log('✅ Evento submit agregado al formulario');
+    }
+    
+    if (elementos.BtnLimpiar) {
+        elementos.BtnLimpiar.addEventListener('click', limpiarTodo);
+        console.log('✅ Evento click agregado a BtnLimpiar');
+    }
+    
+    if (elementos.BtnModificar) {
+        elementos.BtnModificar.addEventListener('click', ModificarCliente);
+        console.log('✅ Evento click agregado a BtnModificar');
+    }
+    
+    if (elementos.validarTelefono) {
+        elementos.validarTelefono.addEventListener('blur', validacionTelefono);
+        console.log('✅ Evento blur agregado a teléfono');
+    }
+    
+    if (elementos.validarNit) {
+        elementos.validarNit.addEventListener('blur', EsValidoNit);
+        console.log('✅ Evento blur agregado a NIT');
+    }
+    
+    // Eventos del datatable
+    datatable.on('click', '.eliminar', EliminarCliente);
+    datatable.on('click', '.modificar', llenarFormulario);
+    console.log('✅ Eventos del datatable agregados');
+    
+    // Intentar cargar clientes
+    console.log('🔄 Intentando cargar clientes...');
+    BuscarCliente();
+});
