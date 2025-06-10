@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <script src="<?= asset('build/js/app.js') ?>"></script>
+    <script src="build/js/app.js"></script>
     <link rel="shortcut icon" href="<?= asset('images/cit.png') ?>" type="image/x-icon">
     <link rel="stylesheet" href="<?= asset('build/styles.css') ?>">
     <title>DemoApp</title>
@@ -26,18 +26,43 @@
                     <li class="nav-item">
                         <a class="nav-link" aria-current="page" href="/ejemplo/"><i class="bi bi-house-fill me-2"></i>Inicio</a>
                     </li>
+
                       <li>
-                        <a class="nav-link" aria-current="page" href="/app03_pmlx/clientes"><i class="bi bi-people-fill me-2"></i>Clientes</a>
+                        <a class="nav-link" aria-current="page" href="/app03_pmlx/login"><i class="bi bi-person-fill-check"></i>  </i>Iniciar sesion</a>
                     </li>
-                        
+                     <li>
+                        <a class="nav-link" aria-current="page" href="/app03_pmlx/clientes"><i class="bi bi-person-plus-fill"></i>  </i>Clientes</a>
+                    </li>
+                    
+                      <li>
+                        <a class="nav-link" aria-current="page" href="/app03_pmlx/dashboard"><i class="bi bi-person-fill-check"></i>  </i> Graficas </a>
+                    </li>
+                     <li>
+                        <a class="nav-link" aria-current="page" href="/app03_pmlx/inventario"><i class="bi bi-person-plus-fill"></i>  </i>Inventarios</a>
+                    </li>
+                      <li>
+                        <a class="nav-link" aria-current="page" href="/app03_pmlx/marcas"><i class="bi bi-person-fill-check"></i>  </i>Marcas</a>
+                    </li>
+                     <li>
+                        <a class="nav-link" aria-current="page" href="/app03_pmlx/reparaciones"><i class="bi bi-person-plus-fill"></i>  </i>Reparaciones </a>
+                    </li>
+                    
+                      <li>
+                        <a class="nav-link" aria-current="page" href="/app03_pmlx/usuarios"><i class="bi bi-person-fill-check"></i>  </i> Usuarios </a>
+                    </li>
+                     <li>
+                        <a class="nav-link" aria-current="page" href="/app03_pmlx/ventas"><i class="bi bi-person-plus-fill"></i>  </i>Ventas</a>
+                    </li>
   
                     <div class="nav-item dropdown " >
                         <a class="nav-link dropdown-toggle" href="#" data-bs-toggle="dropdown">
-                            <i class="bi bi-gear me-2"></i>Opciones 
+                            <i class="bi bi-gear me-2"></i>Dropdown
                         </a>
                         <ul class="dropdown-menu  dropdown-menu-dark "id="dropwdownRevision" style="margin: 0;">
                             <!-- <h6 class="dropdown-header">Información</h6> -->
-                            
+                            <li>
+                                <a class="dropdown-item nav-link text-white " href="/aplicaciones/nueva"><i class="ms-lg-0 ms-2 bi bi-plus-circle me-2"></i>Subitem</a>
+                            </li>
                         
                     
                         

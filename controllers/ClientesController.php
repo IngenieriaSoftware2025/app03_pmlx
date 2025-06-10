@@ -200,57 +200,59 @@ class ClientesController {
         }
     }
 
-    public static function eliminarCliente() {
-        header('Content-Type: application/json');
-        header('Access-Control-Allow-Origin: *');
-        header('Access-Control-Allow-Methods: GET, POST, OPTIONS');
-        header('Access-Control-Allow-Headers: Content-Type');
+   public static function eliminarCliente() {
+    header('Content-Type: application/json');
+    header('Access-Control-Allow-Origin: *');
+    header('Access-Control-Allow-Methods: GET, POST, OPTIONS');
+    header('Access-Control-Allow-Headers: Content-Type');
+    
+    // ✅ CAMBIO: Usar $_GET en lugar de $_POST
+    $id_cliente = $_GET['id_cliente'] ?? '';
+    
+    if (empty($id_cliente)) {
+        http_response_code(400);
+        echo json_encode([
+            'codigo' => 0,
+            'mensaje' => 'ID de cliente requerido'
+        ]);
+        return;
+    }
+
+    try {
+        $cliente = Clientes::find($id_cliente);
         
-        if (empty($_POST['id_cliente'])) {
-            http_response_code(400);
+        if (!$cliente) {
+            http_response_code(404);
             echo json_encode([
                 'codigo' => 0,
-                'mensaje' => 'ID de cliente requerido'
+                'mensaje' => 'Cliente no encontrado'
             ]);
             return;
         }
 
-        try {
-            $cliente = Clientes::find($_POST['id_cliente']);
-            
-            if (!$cliente) {
-                http_response_code(404);
-                echo json_encode([
-                    'codigo' => 0,
-                    'mensaje' => 'Cliente no encontrado'
-                ]);
-                return;
-            }
-
-            $resultado = $cliente->eliminar();
-            
-            if ($resultado) {
-                http_response_code(200);
-                echo json_encode([
-                    'codigo' => 1,
-                    'mensaje' => 'Cliente eliminado exitosamente'
-                ]);
-            } else {
-                http_response_code(400);
-                echo json_encode([
-                    'codigo' => 0,
-                    'mensaje' => 'Error al eliminar el cliente'
-                ]);
-            }
-        } catch (Exception $e) {
-            http_response_code(500);
+        $resultado = $cliente->eliminar();
+        
+        if ($resultado) {
+            http_response_code(200);
+            echo json_encode([
+                'codigo' => 1,
+                'mensaje' => 'Cliente eliminado exitosamente'
+            ]);
+        } else {
+            http_response_code(400);
             echo json_encode([
                 'codigo' => 0,
-                'mensaje' => $e->getMessage()
+                'mensaje' => 'Error al eliminar el cliente'
             ]);
         }
+    } catch (Exception $e) {
+        http_response_code(500);
+        echo json_encode([
+            'codigo' => 0,
+            'mensaje' => $e->getMessage()
+        ]);
     }
-
+}
     public static function buscarClientePorCedula() {
         header('Content-Type: application/json');
         header('Access-Control-Allow-Origin: *');

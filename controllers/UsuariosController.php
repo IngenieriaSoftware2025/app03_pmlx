@@ -15,126 +15,92 @@ class UsuariosController {
     }
 
     public static function buscarUsuarios() {
-        header('Content-Type: application/json');
-        header('Access-Control-Allow-Origin: *');
-        header('Access-Control-Allow-Methods: GET, POST, OPTIONS');
-        header('Access-Control-Allow-Headers: Content-Type');
+    header('Content-Type: application/json');
+    header('Access-Control-Allow-Origin: *');
+    header('Access-Control-Allow-Methods: GET, POST, OPTIONS');
+    header('Access-Control-Allow-Headers: Content-Type');
+    
+    try {
+        // ✅ AÑADIR JOIN con la tabla roles
+        $query = "SELECT u.*, r.nombre_rol 
+                 FROM usuarios u 
+                 LEFT JOIN roles r ON u.id_rol = r.id_rol 
+                 ORDER BY u.fecha_creacion DESC";
         
-        try {
-            // Consulta personalizada para obtener usuarios con roles
-            $query = "SELECT u.*, r.nombre_rol 
-                     FROM usuarios u 
-                     JOIN roles r ON u.id_rol = r.id_rol 
-                     ORDER BY u.fecha_creacion DESC";
-            
-            $usuarios = Usuarios::consultarSQL($query);
-            
-            if ($usuarios) {
-                http_response_code(200);
-                echo json_encode([
-                    'codigo' => 1,
-                    'mensaje' => 'Usuarios encontrados',
-                    'data' => $usuarios
-                ]);
-            } else {
-                http_response_code(200);
-                echo json_encode([
-                    'codigo' => 0,
-                    'mensaje' => 'No se encontraron usuarios',
-                    'data' => []
-                ]);
-            }
-        } catch (Exception $e) {
-            http_response_code(500);
-            echo json_encode([
-                'codigo' => 0,
-                'mensaje' => 'Error al buscar usuarios',
-                'detalle' => $e->getMessage()
-            ]);
-        }
-    }
-
-    public static function guardarUsuario() {
-        header('Content-Type: application/json');
-        header('Access-Control-Allow-Origin: *');
-        header('Access-Control-Allow-Methods: GET, POST, OPTIONS');
-        header('Access-Control-Allow-Headers: Content-Type');
+        $usuarios = Usuarios::consultarSQL($query);
         
-        if (empty($_POST['nombre']) || empty($_POST['apellido']) || empty($_POST['email']) || empty($_POST['password']) || empty($_POST['id_rol'])) {
-            http_response_code(400);
+        if ($usuarios) {
+            http_response_code(200);
+            echo json_encode([
+                'codigo' => 1,
+                'mensaje' => 'Usuarios encontrados',
+                'data' => $usuarios
+            ]);
+        } else {
+            http_response_code(200);
             echo json_encode([
                 'codigo' => 0,
-                'mensaje' => 'Faltan campos obligatorios'
-            ]);
-            return;
-        }
-
-        try {
-            // Validar y limpiar datos
-            $_POST['nombre'] = ucwords(strtolower(trim(htmlspecialchars($_POST['nombre']))));
-            $_POST['apellido'] = ucwords(strtolower(trim(htmlspecialchars($_POST['apellido']))));
-            $_POST['email'] = filter_var($_POST['email'], FILTER_SANITIZE_EMAIL);
-            $_POST['password'] = trim($_POST['password']);
-            $_POST['id_rol'] = filter_var($_POST['id_rol'], FILTER_SANITIZE_NUMBER_INT);
-            $_POST['activo'] = $_POST['activo'] ?? 'S';
-
-            // Validaciones
-            if (strlen($_POST['nombre']) < 2) {
-                throw new Exception('El nombre es inválido');
-            }
-            if (strlen($_POST['apellido']) < 2) {
-                throw new Exception('El apellido es inválido');
-            }
-            if (!filter_var($_POST['email'], FILTER_VALIDATE_EMAIL)) {
-                throw new Exception('El email es inválido');
-            }
-            if (strlen($_POST['password']) < 6) {
-                throw new Exception('La contraseña debe tener al menos 6 caracteres');
-            }
-
-            // Verificar si el email ya existe
-            $query = "SELECT * FROM usuarios WHERE email = '" . ActiveRecord::$db->escape_string($_POST['email']) . "'";
-            $existe = Usuarios::consultarSQL($query);
-            
-            if (!empty($existe)) {
-                throw new Exception('El email ya está registrado');
-            }
-
-            // Encriptar contraseña
-            $passwordHash = password_hash($_POST['password'], PASSWORD_BCRYPT);
-
-            $usuario = new Usuarios([
-                'nombre' => $_POST['nombre'],
-                'apellido' => $_POST['apellido'],
-                'email' => $_POST['email'],
-                'password' => $passwordHash,
-                'id_rol' => $_POST['id_rol'],
-                'activo' => $_POST['activo']
-            ]);
-
-            $resultado = $usuario->crear();
-            
-            if ($resultado) {
-                http_response_code(200);
-                echo json_encode([
-                    'codigo' => 1,
-                    'mensaje' => 'Usuario guardado exitosamente'
-                ]);
-            } else {
-                http_response_code(400);
-                echo json_encode([
-                    'codigo' => 0,
-                    'mensaje' => 'Error al guardar el usuario'
-                ]);
-            }
-        } catch (Exception $e) {
-            http_response_code(500);
-            echo json_encode([
-                'codigo' => 0,
-                'mensaje' => $e->getMessage()
+                'mensaje' => 'No se encontraron usuarios',
+                'data' => []
             ]);
         }
+    } catch (Exception $e) {
+        http_response_code(500);
+        echo json_encode([
+            'codigo' => 0,
+            'mensaje' => 'Error al buscar usuarios',
+            'detalle' => $e->getMessage()
+        ]);
     }
+}
+
+  public static function guardarUsuario() {
+    // ✅ DEBUG: Verificar si el método se está ejecutando
+    error_log("=== INICIANDO guardarUsuario ===");
+    error_log("REQUEST_METHOD: " . $_SERVER['REQUEST_METHOD']);
+    error_log("POST data: " . print_r($_POST, true));
+    
+    // Limpiar buffer de salida
+    if (ob_get_length()) {
+        ob_clean();
+    }
+    
+    // Headers correctos
+    header('Content-Type: application/json; charset=utf-8');
+    header('Access-Control-Allow-Origin: *');
+    header('Access-Control-Allow-Methods: POST, OPTIONS');
+    header('Access-Control-Allow-Headers: Content-Type');
+    
+    // Manejo de preflight OPTIONS
+    if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
+        http_response_code(200);
+        exit;
+    }
+    
+    try {
+        // ✅ RESPUESTA DE PRUEBA INMEDIATA
+        echo json_encode([
+            'codigo' => 1,
+            'mensaje' => 'Conexión exitosa - Método ejecutándose correctamente',
+            'debug' => [
+                'post_data' => $_POST,
+                'method' => $_SERVER['REQUEST_METHOD']
+            ]
+        ]);
+        exit;
+        
+        // TODO: Aquí irá tu lógica real después de confirmar que funciona
+        
+    } catch (Exception $e) {
+        error_log("Error en guardarUsuario: " . $e->getMessage());
+        
+        echo json_encode([
+            'codigo' => 0,
+            'mensaje' => 'Error: ' . $e->getMessage()
+        ]);
+        exit;
+    }
+}
 
     public static function modificarUsuario() {
         header('Content-Type: application/json');

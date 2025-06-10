@@ -4,22 +4,25 @@ import DataTable from "datatables.net-bs5";
 import { validarFormulario } from "../funciones";
 import { lenguaje } from "../lenguaje";
 
-// ✅ CORREGIDO: IDs que coinciden con el HTML
+// ✅ Detectar base URL automáticamente
+const baseUrl = window.location.pathname.split('/').slice(0, 2).join('/');
+console.log('🔧 Base URL detectada:', baseUrl);
+
+// ✅ Elementos del DOM
 const FormClientes = document.getElementById('FormClientes');
 const BtnGuardar = document.getElementById('BtnGuardar');
 const BtnModificar = document.getElementById('BtnModificar');
 const BtnLimpiar = document.getElementById('BtnLimpiar');
-const BtnEliminar = document.getElementById('BtnEliminar');
-const validarTelefono = document.getElementById('telefono'); // ✅ Corregido
-const validarNit = document.getElementById('nit'); // ✅ Corregido
+const validarTelefono = document.getElementById('telefono');
+const validarNit = document.getElementById('nit');
 
+// ✅ VALIDACIONES
 const validacionTelefono = () => {
     const cantidadDigitos = validarTelefono.value;
 
     if (cantidadDigitos.length < 1) {
         validarTelefono.classList.remove('is-valid', 'is-invalid');
     } else {
-        // ✅ CORREGIDO: La lógica estaba mal
         if (cantidadDigitos.length < 8) {
             Swal.fire({
                 position: "center",
@@ -29,7 +32,6 @@ const validacionTelefono = () => {
                 showConfirmButton: false,
                 timer: 3000
             });
-
             validarTelefono.classList.remove('is-valid');
             validarTelefono.classList.add('is-invalid');
         } else {
@@ -40,14 +42,11 @@ const validacionTelefono = () => {
 }
 
 function validandoNit() {
-    // ✅ CORREGIDO: usar el ID correcto
     const nit = document.getElementById('nit').value.trim();
-    
     let nd, add = 0;
 
     if (nd = /^(\d+)-?([\dkK])$/.exec(nit)) {
         nd[2] = (nd[2].toLowerCase() === 'k') ? 10 : parseInt(nd[2], 10);
-
         for (let i = 0; i < nd[1].length; i++) {
             add += ((((i - nd[1].length) * -1) + 1) * parseInt(nd[1][i], 10));
         }
@@ -58,16 +57,17 @@ function validandoNit() {
 }
 
 const EsValidoNit = () => {
-    // ✅ CORREGIDO: usar el elemento correcto
-    const nitElement = document.getElementById('nit');
-    
-    if (validandoNit()) {
-        nitElement.classList.add('is-valid');
-        nitElement.classList.remove('is-invalid');
-    } else {
-        nitElement.classList.remove('is-valid');
-        nitElement.classList.add('is-invalid');
+    if (!validarNit.value.trim()) {
+        validarNit.classList.remove('is-valid', 'is-invalid');
+        return;
+    }
 
+    if (validandoNit()) {
+        validarNit.classList.add('is-valid');
+        validarNit.classList.remove('is-invalid');
+    } else {
+        validarNit.classList.remove('is-valid');
+        validarNit.classList.add('is-invalid');
         Swal.fire({
             position: "center",
             icon: "warning",
@@ -79,95 +79,72 @@ const EsValidoNit = () => {
     }
 }
 
-const GuardarCliente = async (event) => {
-    event.preventDefault();
-    BtnGuardar.disabled = true;
-
-    const body = new FormData(FormClientes);
-    const url = '/app03_jemg/clientes/guardarCliente';
-    
-    try {
-        const respuesta = await fetch(url, {
-            method: 'POST',
-            body
-        });
-        const datos = await respuesta.json();
-        const { codigo, mensaje } = datos;
-        
-        if (codigo == 1) {
-            Swal.fire({
-                position: "center",
-                icon: "success",
-                title: "Éxito",
-                text: mensaje,
-                showConfirmButton: false,
-                timer: 2000,
-            });
-            limpiarTodo();
-            BuscarCliente();
-        } else {
-            Swal.fire({
-                position: "center",
-                icon: "error",
-                title: "Error",
-                text: mensaje,
-                showConfirmButton: false,
-                timer: 3000,
-            });
-        }
-    } catch (error) {
-        console.log("Error:", error);
-    }
-    BtnGuardar.disabled = false;
-}
-
+// ✅ DATATABLE
 const datatable = new DataTable('#TableClientes', {
     dom: `
         <"row mt-3 justify-content-between"
-            <"col" l>
-            <"col" B>
-            <"col-3" f>
+            <"col-md-6" l>
+            <"col-md-6" f>
         >
         t
         <"row mt-3 justify-content-between"
-            <"col-md-3 d-flex align-items-center" i> 
-            <"col-md-8 d-flex justify-content-end" p>
+            <"col-md-6" i> 
+            <"col-md-6" p>
         >
     `,
     language: lenguaje,
     data: [],
+    responsive: true,
     columns: [
         {
             title: 'No.',
-            data: 'id_cliente', // ✅ CORREGIDO: nombre de campo
+            data: 'id_cliente',
             width: '5%',
             render: (data, type, row, meta) => meta.row + 1
         },
-        { title: 'Nombre', data: 'nombres' }, // ✅ CORREGIDO
-        { title: 'Apellidos', data: 'apellidos' }, // ✅ CORREGIDO
-        { title: 'Correo', data: 'correo' }, // ✅ CORREGIDO
-        { title: 'Teléfono', data: 'telefono' }, // ✅ CORREGIDO
-        { title: 'NIT', data: 'nit' }, // ✅ CORREGIDO
+        { 
+            title: 'Nombre', 
+            data: 'nombre',
+            render: (data, type, row) => `${data} ${row.apellido}`
+        },
+        { title: 'Cédula', data: 'cedula' },
+        { title: 'NIT', data: 'nit' },
+        { title: 'Email', data: 'email' },
+        { title: 'Teléfono', data: 'telefono' },
+        {
+            title: 'Fecha Registro',
+            data: 'fecha_creacion',
+            render: (data) => {
+                if (!data) return 'N/A';
+                const fecha = new Date(data);
+                return fecha.toLocaleDateString('es-GT');
+            }
+        },
         {
             title: 'Acciones',
-            data: 'id_cliente', // ✅ CORREGIDO
+            data: 'id_cliente',
             searchable: false,
             orderable: false,
-            render: (data, type, row, meta) => {
+            width: '15%',
+            render: (data, type, row) => {
                 return `
-                <div class='d-flex justify-content-center'>
-                     <button class='btn btn-warning modificar mx-1' 
+                <div class='d-flex justify-content-center gap-1'>
+                     <button class='btn btn-warning btn-sm modificar' 
                          data-id="${data}" 
-                         data-nombres="${row.nombres}"  
-                         data-apellidos="${row.apellidos}"  
-                         data-nit="${row.nit}"  
-                         data-telefono="${row.telefono}"  
-                         data-correo="${row.correo}">
-                         <i class='bi bi-pencil-square me-1'></i> Modificar
+                         data-nombre="${row.nombre || ''}"  
+                         data-apellido="${row.apellido || ''}"  
+                         data-cedula="${row.cedula || ''}"
+                         data-nit="${row.nit || ''}"  
+                         data-telefono="${row.telefono || ''}"  
+                         data-email="${row.email || ''}"
+                         data-direccion="${row.direccion || ''}"
+                         title="Modificar cliente">
+                         <i class='fas fa-edit'></i>
                      </button>
-                     <button class='btn btn-danger eliminar mx-1' 
-                         data-id="${data}">
-                        <i class="bi bi-trash3 me-1"></i>Eliminar
+                     <button class='btn btn-danger btn-sm eliminar' 
+                         data-id="${data}"
+                         title="Eliminar cliente">
+                        <i class="fas fa-trash"></i>
                      </button>
                  </div>`;
             }
@@ -175,11 +152,11 @@ const datatable = new DataTable('#TableClientes', {
     ],
 })
 
+// ✅ BUSCAR CLIENTES
 const BuscarCliente = async () => {
     console.log('🔄 Iniciando búsqueda de clientes...');
     
-    // ✅ USAR LA RUTA DEL FRAMEWORK QUE YA TIENES CONFIGURADA
-    const url = '/app03_jemg/clientes/buscarCliente';
+    const url = `${baseUrl}/clientes/buscarAPI`;
     
     try {
         console.log(`🔄 Usando URL: ${url}`);
@@ -192,10 +169,17 @@ const BuscarCliente = async () => {
             }
         });
         
-        console.log(`📡 Respuesta:`, respuesta.status, respuesta.statusText);
+        console.log(`📡 Status: ${respuesta.status} ${respuesta.statusText}`);
         
         if (!respuesta.ok) {
-            throw new Error(`HTTP ${respuesta.status}`);
+            throw new Error(`HTTP ${respuesta.status}: ${respuesta.statusText}`);
+        }
+        
+        const contentType = respuesta.headers.get('content-type');
+        if (!contentType || !contentType.includes('application/json')) {
+            const text = await respuesta.text();
+            console.error('❌ Respuesta no es JSON:', text.substring(0, 500));
+            throw new Error('El servidor no devolvió JSON válido');
         }
         
         const datos = await respuesta.json();
@@ -204,20 +188,25 @@ const BuscarCliente = async () => {
         const { codigo, mensaje, data } = datos;
 
         if (codigo === 1) {
-            console.log('✅ Clientes cargados exitosamente');
+            console.log(`✅ ${data.length} clientes cargados exitosamente`);
             datatable.clear().draw();
             datatable.rows.add(data || []).draw();
             
-            Swal.fire({
-                position: "center",
-                icon: "success",
-                title: "¡Éxito!",
-                text: mensaje,
-                showConfirmButton: false,
-                timer: 2000,
-            });
+            // No mostrar mensaje si hay datos
+            if (data.length === 0) {
+                Swal.fire({
+                    position: "center",
+                    icon: "info",
+                    title: "Sin registros",
+                    text: "No hay clientes registrados",
+                    showConfirmButton: false,
+                    timer: 2000,
+                });
+            }
         } else {
             console.log('ℹ️ Respuesta del servidor:', mensaje);
+            datatable.clear().draw();
+            
             Swal.fire({
                 position: "center",
                 icon: "info",
@@ -229,86 +218,70 @@ const BuscarCliente = async () => {
         }
     } catch (error) {
         console.error('❌ Error:', error);
+        datatable.clear().draw();
+        
         Swal.fire({
             position: "center",
             icon: "error",
             title: "Error de conexión",
-            text: "No se pudo conectar con el servidor",
+            text: `No se pudo conectar con el servidor: ${error.message}`,
             showConfirmButton: true,
         });
     }
 }
 
-const llenarFormulario = (event) => {
-    const datos = event.currentTarget.dataset;
-
-    // ✅ CORREGIDO: IDs correctos
-    document.getElementById('id_cliente').value = datos.id;
-    document.getElementById('nombres').value = datos.nombres;
-    document.getElementById('apellidos').value = datos.apellidos;
-    document.getElementById('nit').value = datos.nit;
-    document.getElementById('telefono').value = datos.telefono;
-    document.getElementById('correo').value = datos.correo;
-
-    BtnGuardar.classList.add('d-none');
-    BtnModificar.classList.remove('d-none');
-
-    window.scrollTo({
-        top: 0
-    });
-}
-
-const limpiarTodo = () => {
-    FormClientes.reset();
-    BtnGuardar.classList.remove('d-none');
-    BtnModificar.classList.add('d-none');
-    
-    // Limpiar clases de validación
-    const inputs = FormClientes.querySelectorAll('input');
-    inputs.forEach(input => {
-        input.classList.remove('is-valid', 'is-invalid');
-    });
-}
-
-const ModificarCliente = async (event) => {
+// ✅ GUARDAR CLIENTE
+const GuardarCliente = async (event) => {
     event.preventDefault();
-    BtnModificar.disabled = true;
+    BtnGuardar.disabled = true;
 
-    if (!validarFormulario(FormClientes, [''])) {
+    // Validar campos requeridos
+    const nombre = document.getElementById('nombre').value.trim();
+    const apellido = document.getElementById('apellido').value.trim();
+    const telefono = document.getElementById('telefono').value.trim();
+
+    if (!nombre || !apellido || !telefono) {
         Swal.fire({
             position: "center",
             icon: "warning",
-            title: "Formulario incompleto",
-            text: "Debe validar todos los campos",
+            title: "Campos obligatorios",
+            text: "Nombre, apellido y teléfono son campos obligatorios",
             showConfirmButton: false,
             timer: 3000,
         });
-        BtnModificar.disabled = false;
+        BtnGuardar.disabled = false;
         return;
     }
 
-    const body = new FormData(FormClientes);
-    const url = '/app03_jemg/clientes/modificarCliente';
-    const config = {
-        method: 'POST',
-        body
-    }
-
+    const formData = new FormData(FormClientes);
+    const url = `${baseUrl}/clientes/guardarAPI`;
+    
     try {
-        const respuesta = await fetch(url, config);
+        console.log(`🔄 Guardando cliente en: ${url}`);
+        
+        const respuesta = await fetch(url, {
+            method: 'POST',
+            body: formData
+        });
+        
+        if (!respuesta.ok) {
+            throw new Error(`HTTP ${respuesta.status}`);
+        }
+        
         const datos = await respuesta.json();
+        console.log('✅ Respuesta:', datos);
+        
         const { codigo, mensaje } = datos;
-
-        if (codigo === 1) {
+        
+        if (codigo == 1) {
             Swal.fire({
                 position: "center",
                 icon: "success",
-                title: "Éxito",
+                title: "¡Éxito!",
                 text: mensaje,
                 showConfirmButton: false,
-                timer: 3000,
+                timer: 2000,
             });
-
             limpiarTodo();
             BuscarCliente();
         } else {
@@ -322,11 +295,94 @@ const ModificarCliente = async (event) => {
             });
         }
     } catch (error) {
-        console.log("Error:", error);
+        console.error('❌ Error al guardar:', error);
+        Swal.fire({
+            position: "center",
+            icon: "error",
+            title: "Error",
+            text: `Error al guardar: ${error.message}`,
+            showConfirmButton: true,
+        });
+    }
+    BtnGuardar.disabled = false;
+}
+
+// ✅ MODIFICAR CLIENTE
+const ModificarCliente = async (event) => {
+    event.preventDefault();
+    BtnModificar.disabled = true;
+
+    // Validar campos requeridos
+    const nombre = document.getElementById('nombre').value.trim();
+    const apellido = document.getElementById('apellido').value.trim();
+    const telefono = document.getElementById('telefono').value.trim();
+
+    if (!nombre || !apellido || !telefono) {
+        Swal.fire({
+            position: "center",
+            icon: "warning",
+            title: "Campos obligatorios",
+            text: "Nombre, apellido y teléfono son campos obligatorios",
+            showConfirmButton: false,
+            timer: 3000,
+        });
+        BtnModificar.disabled = false;
+        return;
+    }
+
+    const formData = new FormData(FormClientes);
+    const url = `${baseUrl}/clientes/modificarAPI`;
+
+    try {
+        console.log(`🔄 Modificando cliente en: ${url}`);
+        
+        const respuesta = await fetch(url, {
+            method: 'POST',
+            body: formData
+        });
+        
+        if (!respuesta.ok) {
+            throw new Error(`HTTP ${respuesta.status}`);
+        }
+        
+        const datos = await respuesta.json();
+        const { codigo, mensaje } = datos;
+
+        if (codigo === 1) {
+            Swal.fire({
+                position: "center",
+                icon: "success",
+                title: "¡Éxito!",
+                text: mensaje,
+                showConfirmButton: false,
+                timer: 2000,
+            });
+            limpiarTodo();
+            BuscarCliente();
+        } else {
+            Swal.fire({
+                position: "center",
+                icon: "error",
+                title: "Error",
+                text: mensaje,
+                showConfirmButton: false,
+                timer: 3000,
+            });
+        }
+    } catch (error) {
+        console.error('❌ Error al modificar:', error);
+        Swal.fire({
+            position: "center",
+            icon: "error",
+            title: "Error",
+            text: `Error al modificar: ${error.message}`,
+            showConfirmButton: true,
+        });
     }
     BtnModificar.disabled = false;
 }
 
+// ✅ ELIMINAR CLIENTE - Necesitas cambiar tu controlador para usar GET
 const EliminarCliente = async (e) => {
     const idCliente = e.currentTarget.dataset.id;
 
@@ -334,9 +390,9 @@ const EliminarCliente = async (e) => {
         position: "center",
         icon: "question",
         title: "¿Desea ejecutar esta acción?",
-        text: "Usted eliminará un cliente",
+        text: "Esta acción eliminará permanentemente el cliente",
         showConfirmButton: true,
-        confirmButtonText: "Sí",
+        confirmButtonText: "Sí, eliminar",
         confirmButtonColor: "#d33",
         cancelButtonText: "Cancelar",
         showCancelButton: true
@@ -344,15 +400,29 @@ const EliminarCliente = async (e) => {
 
     if (!AlertaConfirmarEliminar.isConfirmed) return;
 
-    const body = new URLSearchParams();
-    body.append('id_cliente', idCliente); // ✅ CORREGIDO: nombre del campo
-
     try {
-        const respuesta = await fetch('/app03_jemg/clientes/eliminarCliente', {
+        // ✅ OPCIÓN 1: Si cambias el controlador para usar GET
+        const url = `${baseUrl}/clientes/eliminar?id_cliente=${idCliente}`;
+        
+        const respuesta = await fetch(url, {
+            method: 'GET'
+        });
+
+        // ✅ OPCIÓN 2: Si mantienes POST (comentar la opción 1 y usar esta)
+        /*
+        const body = new URLSearchParams();
+        body.append('id_cliente', idCliente);
+        
+        const respuesta = await fetch(`${baseUrl}/clientes/eliminarAPI`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
             body
         });
+        */
+
+        if (!respuesta.ok) {
+            throw new Error(`HTTP ${respuesta.status}`);
+        }
 
         const datos = await respuesta.json();
         const { codigo, mensaje } = datos;
@@ -361,7 +431,7 @@ const EliminarCliente = async (e) => {
             await Swal.fire({
                 position: "center",
                 icon: "success",
-                title: "Éxito",
+                title: "¡Eliminado!",
                 text: mensaje,
                 showConfirmButton: false,
                 timer: 2000
@@ -378,26 +448,71 @@ const EliminarCliente = async (e) => {
             });
         }
     } catch (error) {
-        console.log("Error:", error);
+        console.error('❌ Error al eliminar:', error);
+        Swal.fire({
+            position: "center",
+            icon: "error",
+            title: "Error",
+            text: `Error al eliminar: ${error.message}`,
+            showConfirmButton: true,
+        });
     }
 };
 
-// ✅ VERIFICACIÓN DE ELEMENTOS Y EVENTOS
+// ✅ LLENAR FORMULARIO PARA MODIFICAR
+const llenarFormulario = (event) => {
+    const datos = event.currentTarget.dataset;
+
+    document.getElementById('id_cliente').value = datos.id;
+    document.getElementById('nombre').value = datos.nombre;
+    document.getElementById('apellido').value = datos.apellido;
+    document.getElementById('cedula').value = datos.cedula;
+    document.getElementById('nit').value = datos.nit;
+    document.getElementById('telefono').value = datos.telefono;
+    document.getElementById('email').value = datos.email;
+    document.getElementById('direccion').value = datos.direccion;
+
+    // Cambiar botones
+    BtnGuardar.classList.add('d-none');
+    BtnModificar.classList.remove('d-none');
+
+    // Scroll al formulario
+    document.getElementById('FormClientes').scrollIntoView({ 
+        behavior: 'smooth',
+        block: 'start'
+    });
+}
+
+// ✅ LIMPIAR FORMULARIO
+const limpiarTodo = () => {
+    FormClientes.reset();
+    BtnGuardar.classList.remove('d-none');
+    BtnModificar.classList.add('d-none');
+    
+    // Limpiar clases de validación
+    const inputs = FormClientes.querySelectorAll('input, textarea');
+    inputs.forEach(input => {
+        input.classList.remove('is-valid', 'is-invalid');
+    });
+
+    // Limpiar el ID oculto
+    document.getElementById('id_cliente').value = '';
+}
+
+// ✅ INICIALIZACIÓN
 document.addEventListener('DOMContentLoaded', function() {
-    console.log('DOM cargado - Verificando elementos...');
+    console.log('🔧 Inicializando módulo de clientes...');
     
     // Verificar elementos críticos
     const elementos = {
-        FormClientes: document.getElementById('FormClientes'),
-        BtnGuardar: document.getElementById('BtnGuardar'),
-        BtnModificar: document.getElementById('BtnModificar'),
-        BtnLimpiar: document.getElementById('BtnLimpiar'),
-        validarTelefono: document.getElementById('telefono'),
-        validarNit: document.getElementById('nit'),
-        TableClientes: document.getElementById('TableClientes')
+        FormClientes,
+        BtnGuardar,
+        BtnModificar,
+        BtnLimpiar,
+        validarTelefono,
+        validarNit
     };
     
-    // Log de elementos encontrados/no encontrados
     Object.entries(elementos).forEach(([nombre, elemento]) => {
         if (elemento) {
             console.log(`✅ ${nombre} encontrado`);
@@ -406,29 +521,29 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     });
     
-    // Solo agregar eventos si los elementos existen
-    if (elementos.FormClientes) {
-        elementos.FormClientes.addEventListener('submit', GuardarCliente);
+    // Event listeners
+    if (FormClientes) {
+        FormClientes.addEventListener('submit', GuardarCliente);
         console.log('✅ Evento submit agregado al formulario');
     }
     
-    if (elementos.BtnLimpiar) {
-        elementos.BtnLimpiar.addEventListener('click', limpiarTodo);
+    if (BtnLimpiar) {
+        BtnLimpiar.addEventListener('click', limpiarTodo);
         console.log('✅ Evento click agregado a BtnLimpiar');
     }
     
-    if (elementos.BtnModificar) {
-        elementos.BtnModificar.addEventListener('click', ModificarCliente);
+    if (BtnModificar) {
+        BtnModificar.addEventListener('click', ModificarCliente);
         console.log('✅ Evento click agregado a BtnModificar');
     }
     
-    if (elementos.validarTelefono) {
-        elementos.validarTelefono.addEventListener('blur', validacionTelefono);
+    if (validarTelefono) {
+        validarTelefono.addEventListener('blur', validacionTelefono);
         console.log('✅ Evento blur agregado a teléfono');
     }
     
-    if (elementos.validarNit) {
-        elementos.validarNit.addEventListener('blur', EsValidoNit);
+    if (validarNit) {
+        validarNit.addEventListener('blur', EsValidoNit);
         console.log('✅ Evento blur agregado a NIT');
     }
     
@@ -437,7 +552,7 @@ document.addEventListener('DOMContentLoaded', function() {
     datatable.on('click', '.modificar', llenarFormulario);
     console.log('✅ Eventos del datatable agregados');
     
-    // Intentar cargar clientes
-    console.log('🔄 Intentando cargar clientes...');
+    // Cargar clientes al iniciar
+    console.log('🔄 Cargando clientes iniciales...');
     BuscarCliente();
 });
